@@ -1,0 +1,32 @@
+{
+  "generator-jhipster": {
+    "applicationType": "monolith",
+    "authenticationType": "jwt",
+    "baseName": "HipsterStore",
+    "buildTool": "maven",
+    "cacheProvider": "ehcache",
+    "clientFramework": "angular",
+    "clientTestFrameworks": [],
+    "clientTheme": "none",
+    "creationTimestamp": 1742565509504,
+    "databaseType": "sql",
+    "devDatabaseType": "postgresql",
+    "enableHibernateCache": true,
+    "enableTranslation": false,
+    "entities": [],
+    "feignClient": null,
+    "jhipsterVersion": "8.9.0",
+    "jwtSecretKey": "ZWU5MWVmZDEwMmJkMTU2MmU2NjhiZjkxYjRiNzFlYzI0OTJiZWZmOGU1MDMyNTllNTQwMGY2MDQ3NTRjYTUwZmM0NTE4ZjNkMTZiMzk5ZWEyMThhYTA1OTk5NmQ4ZDVhODliNjdlNjk1OWVjODE0YTI3YWQyMTUxNjM2NTRkMWM=",
+    "microfrontend": null,
+    "microfrontends": [],
+    "nativeLanguage": "en",
+    "packageName": "net.petcu.store",
+    "prodDatabaseType": "postgresql",
+    "reactive": false,
+    "serverPort": null,
+    "serviceDiscoveryType": null,
+    "syncUserWithIdp": null,
+    "testFrameworks": [],
+    "withAdminUi": true
+  }
+}
