@@ -1,0 +1,54 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (pricedProduct(); as pricedProductRef) {
+      <div>
+        <h2 data-cy="pricedProductDetailsHeading"><span>Priced Product</span></h2>
+
+        <hr />
+
+        <jhi-alert-error></jhi-alert-error>
+
+        <jhi-alert></jhi-alert>
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ pricedProductRef.id }}</span>
+          </dd>
+          <dt><span>Active</span></dt>
+          <dd>
+            <span>{{ pricedProductRef.active }}</span>
+          </dd>
+          <dt><span>Updated Date</span></dt>
+          <dd>
+            <span>{{ pricedProductRef.updatedDate | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Product</span></dt>
+          <dd>
+            @if (pricedProduct()!.product) {
+              <div>
+                <a [routerLink]="['/product', pricedProduct()!.product?.id, 'view']">{{ pricedProductRef.product?.name }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span>Price</span></dt>
+          <dd>
+            @if (pricedProduct()!.price) {
+              <div>
+                <a [routerLink]="['/price', pricedProduct()!.price?.id, 'view']">{{ pricedProductRef.price?.value }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/priced-product', pricedProductRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
