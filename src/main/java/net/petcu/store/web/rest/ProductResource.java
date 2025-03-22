@@ -50,12 +50,12 @@ public class ProductResource {
     @PostMapping("")
     public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) throws URISyntaxException {
         LOG.debug("REST request to save Product : {}", productDTO);
-        if (productDTO.getId() != null) {
+        if (productDTO.id() != null) {
             throw new BadRequestAlertException("A new product cannot already have an ID", ENTITY_NAME, "idexists");
         }
         productDTO = productService.save(productDTO);
-        return ResponseEntity.created(new URI("/api/products/" + productDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, productDTO.getId().toString()))
+        return ResponseEntity.created(new URI("/api/products/" + productDTO.id()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, ((Object) productDTO.id()).toString()))
             .body(productDTO);
     }
 
@@ -75,10 +75,10 @@ public class ProductResource {
         @RequestBody ProductDTO productDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to update Product : {}, {}", id, productDTO);
-        if (productDTO.getId() == null) {
+        if (productDTO.id() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, productDTO.getId())) {
+        if (!Objects.equals(id, productDTO.id())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -88,7 +88,7 @@ public class ProductResource {
 
         productDTO = productService.update(productDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, productDTO.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, ((Object) productDTO.id()).toString()))
             .body(productDTO);
     }
 
@@ -109,10 +109,10 @@ public class ProductResource {
         @RequestBody ProductDTO productDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Product partially : {}, {}", id, productDTO);
-        if (productDTO.getId() == null) {
+        if (productDTO.id() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, productDTO.getId())) {
+        if (!Objects.equals(id, productDTO.id())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -124,7 +124,7 @@ public class ProductResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, productDTO.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, ((Object) productDTO.id()).toString())
         );
     }
 
