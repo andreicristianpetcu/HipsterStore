@@ -51,6 +51,7 @@ public class CacheConfiguration {
             createCache(cm, net.petcu.store.domain.Authority.class.getName());
             createCache(cm, net.petcu.store.domain.User.class.getName() + ".authorities");
             createCache(cm, net.petcu.store.domain.Product.class.getName());
+            createCache(cm, net.petcu.store.domain.Price.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

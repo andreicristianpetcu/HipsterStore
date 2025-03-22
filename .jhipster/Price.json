@@ -1,0 +1,17 @@
+{
+  "annotations": {
+    "changelogDate": "20250322131353"
+  },
+  "fields": [
+    {
+      "fieldName": "value",
+      "fieldType": "Double"
+    }
+  ],
+  "name": "Price",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "no"
+}
