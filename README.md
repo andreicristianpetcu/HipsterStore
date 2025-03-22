@@ -12,6 +12,8 @@ Entities and their role:
   - Fields: id, name, description;
 - Price - A separate object that contains the price of a product.
   - Fields: id, value;
+- ProductPrice - Keeps track of all the latest price for a specific product. It's a one to one relationship.
+  - Fields: product, price;
 - Order - An entity that represents a specific purchase.
   - Fields: orderItems, discount, subtotal, finalPrice
 - OrderItem - Stores a product and a quantity and will be part of an Order.
