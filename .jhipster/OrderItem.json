@@ -1,0 +1,32 @@
+{
+  "annotations": {
+    "changelogDate": "20250322164408"
+  },
+  "fields": [
+    {
+      "fieldName": "quantity",
+      "fieldType": "Long"
+    }
+  ],
+  "name": "OrderItem",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "product",
+      "relationshipName": "product",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "value",
+      "otherEntityName": "price",
+      "relationshipName": "price",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "no"
+}

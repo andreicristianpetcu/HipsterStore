@@ -53,6 +53,7 @@ public class CacheConfiguration {
             createCache(cm, net.petcu.store.domain.Product.class.getName());
             createCache(cm, net.petcu.store.domain.Price.class.getName());
             createCache(cm, net.petcu.store.domain.PricedProduct.class.getName());
+            createCache(cm, net.petcu.store.domain.OrderItem.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }
