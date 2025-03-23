@@ -31,10 +31,10 @@ public class Order implements Serializable {
     private Instant date;
 
     @Column(name = "subtotal")
-    private Double subtotal;
+    private Double subtotal = 0.0d;
 
     @Column(name = "final_price")
-    private Double finalPrice;
+    private Double finalPrice = 0.0d;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

@@ -33,16 +33,17 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public OrderDTO createOrder() {
         String currentUser = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new UnauthorizedException("User is not authenticated"));
-
-        log.debug("Request to create a new order for user: {}", currentUser);
+        log.debug("Request to create a new order for currentUser={}", currentUser);
 
         User user = userRepository
             .findOneByLogin(currentUser)
             .orElseThrow(() -> new UserNotFoundException("User not found: " + currentUser));
+        log.debug("User found in the UserId={}", user.getId());
 
         Order order = new Order().date(Instant.now()).status(OrderStatus.NEW).user(user);
-
         order = orderRepository.save(order);
+        log.debug("Order created OrderId={}", order.getId());
+
         return new OrderDTO(order);
     }
 

@@ -23,8 +23,7 @@ public class CustomerController {
     @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> createOrder() {
         log.debug("REST request to create a new order");
-        OrderDTO result = customerService.createOrder();
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(customerService.createOrder());
     }
 
     @PostMapping("/orders/{orderId}/items")

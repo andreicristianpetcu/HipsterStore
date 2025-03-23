@@ -64,6 +64,8 @@ class CustomerServiceTest {
             assertThat(result.id()).isEqualTo(expectedOrder.getId());
             assertThat(result.status()).isEqualTo(OrderStatus.NEW);
             assertThat(result.userLogin()).isEqualTo(DEFAULT_LOGIN);
+            assertThat(result.subtotal()).isEqualTo(0);
+            assertThat(result.finalPrice()).isEqualTo(0);
 
             verify(userRepository).findOneByLogin(DEFAULT_LOGIN);
             verify(orderRepository).save(any(Order.class));
