@@ -30,7 +30,7 @@ public class AdminServiceImpl implements AdminService {
         // Find the product
         Product product = productRepository
             .findById(productId)
-            .orElseThrow(() -> new ProductNotFoundException("Product not found: " + productId));
+            .orElseThrow(() -> new ProductNotFoundException("Product not found: ", productId));
         log.debug("Found product productId={} name={}", productId, product.getName());
 
         List<PricedProduct> activePrices = pricedProductRepository.findByProductIdAndActiveTrue(productId);

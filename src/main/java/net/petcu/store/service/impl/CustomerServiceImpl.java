@@ -53,19 +53,17 @@ public class CustomerServiceImpl implements CustomerService {
         log.debug("Request to add item productId={} quantity={} to orderId={}", productId, quantity, orderId);
 
         log.debug("Looking up order orderId={}", orderId);
-        Order order = orderRepository
-            .findOneWithEagerRelationships(orderId)
-            .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+        Order order = orderRepository.findOneWithEagerRelationships(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
 
         log.debug("Looking up product productId={}", productId);
         Product product = productRepository
             .findById(productId)
-            .orElseThrow(() -> new ProductNotFoundException("Product not found: " + productId));
+            .orElseThrow(() -> new ProductNotFoundException("Product not found: ", productId));
 
         log.debug("Looking up latest active price for product productId={}", productId);
         PricedProduct pricedProduct = pricedProductRepository
             .findLatestActiveByProductId(productId)
-            .orElseThrow(() -> new ProductNotFoundException("No active price found for product: " + productId));
+            .orElseThrow(() -> new ProductNotFoundException("No active price found for product: ", productId));
 
         log.debug("Creating order item with productId={} quantity={}", productId, quantity);
         OrderItem orderItem = new OrderItem().order(order).product(product).price(pricedProduct.getPrice()).quantity(quantity);
@@ -87,9 +85,7 @@ public class CustomerServiceImpl implements CustomerService {
     public OrderDTO applyDiscountCode(Long orderId, UUID discountCode) {
         log.debug("Request to apply discount code {} to order {}", discountCode, orderId);
 
-        Order order = orderRepository
-            .findOneWithEagerRelationships(orderId)
-            .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+        Order order = orderRepository.findOneWithEagerRelationships(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
         log.debug("Found order orderId={} with subtotal={}", orderId, order.getSubtotal());
 
         if (order.getStatus() != OrderStatus.NEW) {
@@ -135,9 +131,7 @@ public class CustomerServiceImpl implements CustomerService {
     public OrderDTO finalizeOrder(Long orderId) {
         log.debug("Request to finalize order {}", orderId);
 
-        Order order = orderRepository
-            .findOneWithEagerRelationships(orderId)
-            .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+        Order order = orderRepository.findOneWithEagerRelationships(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
         log.debug("Found order orderId={} with status={}", orderId, order.getStatus());
 
         if (order.getStatus() != OrderStatus.NEW) {
