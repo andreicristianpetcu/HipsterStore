@@ -1,0 +1,26 @@
+{
+  "annotations": {
+    "changelogDate": "20250322164911"
+  },
+  "fields": [
+    {
+      "fieldName": "discountCode",
+      "fieldType": "UUID"
+    },
+    {
+      "fieldName": "discountType",
+      "fieldType": "DiscountType",
+      "fieldValues": "PERCENTAGE,FIXED,BUY_ONE_GET_ONE_FREE"
+    },
+    {
+      "fieldName": "used",
+      "fieldType": "Boolean"
+    }
+  ],
+  "name": "Discount",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "no"
+}
