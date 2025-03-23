@@ -41,4 +41,6 @@ public interface PricedProductRepository extends JpaRepository<PricedProduct, Lo
         "select pricedProduct from PricedProduct pricedProduct left join fetch pricedProduct.product left join fetch pricedProduct.price where pricedProduct.id =:id"
     )
     Optional<PricedProduct> findOneWithToOneRelationships(@Param("id") Long id);
+
+    Object findLatestActiveByProductId(Long defaultProductId);
 }

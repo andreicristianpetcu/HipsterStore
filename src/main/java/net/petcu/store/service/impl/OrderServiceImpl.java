@@ -2,6 +2,7 @@ package net.petcu.store.service.impl;
 
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import net.petcu.store.domain.Order;
 import net.petcu.store.repository.OrderRepository;
 import net.petcu.store.service.OrderService;
@@ -17,15 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private static final Logger LOG = LoggerFactory.getLogger(OrderServiceImpl.class);
-
     private final OrderRepository orderRepository;
-
-    public OrderServiceImpl(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
 
     @Override
     public Order save(Order order) {

@@ -1,12 +1,16 @@
 package net.petcu.store.service.impl;
 
 import java.time.Instant;
+import lombok.RequiredArgsConstructor;
 import net.petcu.store.domain.Order;
 import net.petcu.store.domain.User;
 import net.petcu.store.domain.enumeration.OrderStatus;
+import net.petcu.store.exception.OrderNotFoundException;
 import net.petcu.store.exception.UnauthorizedException;
 import net.petcu.store.exception.UserNotFoundException;
 import net.petcu.store.repository.OrderRepository;
+import net.petcu.store.repository.PricedProductRepository;
+import net.petcu.store.repository.ProductRepository;
 import net.petcu.store.repository.UserRepository;
 import net.petcu.store.security.SecurityUtils;
 import net.petcu.store.service.CustomerService;
@@ -19,16 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
     private final Logger log = LoggerFactory.getLogger(CustomerServiceImpl.class);
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-
-    public CustomerServiceImpl(OrderRepository orderRepository, UserRepository userRepository) {
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-    }
+    private final ProductRepository productRepository;
+    private final PricedProductRepository pricedProductRepository;
 
     @Override
     public OrderDTO createOrder() {
@@ -49,8 +51,20 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public OrderDTO addItemToOrder(Long orderId, Long productId, Integer quantity) {
-        log.debug("Request to add item {} (quantity: {}) to order {}", productId, quantity, orderId);
-        throw new NotImplementedException("Not ready yet");
+        log.debug("Request to add item productId={} quantity={} to orderId={}", productId, quantity, orderId);
+
+        Order order = orderRepository
+            .findOneWithEagerRelationships(orderId)
+            .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+
+        // TODO: Implement the rest of the method
+        // 1. Find the product
+        // 2. Find the latest active priced product
+        // 3. Create and add the order item
+        // 4. Update order totals
+        // 5. Save and return
+
+        return new OrderDTO(order);
     }
 
     @Override
