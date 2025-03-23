@@ -9,6 +9,8 @@ import java.util.Optional;
 import net.petcu.store.domain.Order;
 import net.petcu.store.domain.User;
 import net.petcu.store.domain.enumeration.OrderStatus;
+import net.petcu.store.exception.UnauthorizedException;
+import net.petcu.store.exception.UserNotFoundException;
 import net.petcu.store.repository.OrderRepository;
 import net.petcu.store.repository.UserRepository;
 import net.petcu.store.security.SecurityUtils;
@@ -69,14 +71,14 @@ class CustomerServiceTest {
     }
 
     @Test
-    void GivenMissingUser_WhenCreateOrder_ThenShouldThrowException() {
+    void GivenMissingUser_WhenCreateOrder_ThenShouldThrowUnauthorizedException() {
         try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
             securityUtils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
             // Act & Assert
             assertThatThrownBy(() -> customerService.createOrder())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Current user not found");
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("User is not authenticated");
 
             verify(orderRepository, never()).save(any());
         }
