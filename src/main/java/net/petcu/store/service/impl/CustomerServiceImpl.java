@@ -1,5 +1,6 @@
 package net.petcu.store.service.impl;
 
+import net.petcu.store.security.SecurityUtils;
 import net.petcu.store.service.CustomerService;
 import net.petcu.store.service.dto.OrderDTO;
 import org.slf4j.Logger;
@@ -15,7 +16,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public OrderDTO createOrder() {
-        log.debug("Request to create a new order");
+        String currentUser = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("Current user not found"));
+
+        log.debug("Request to create a new order for user: {}", currentUser);
+        // TODO: Implement actual order creation
         return new OrderDTO();
     }
 

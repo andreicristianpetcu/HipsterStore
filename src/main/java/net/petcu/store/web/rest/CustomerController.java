@@ -5,6 +5,7 @@ import net.petcu.store.service.dto.OrderDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class CustomerController {
     }
 
     @PostMapping("/orders")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> createOrder() {
         log.debug("REST request to create a new order");
         OrderDTO result = customerService.createOrder();
@@ -26,6 +28,7 @@ public class CustomerController {
     }
 
     @PostMapping("/orders/{orderId}/items")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> addItemToOrder(
         @PathVariable Long orderId,
         @RequestParam Long productId,
@@ -37,6 +40,7 @@ public class CustomerController {
     }
 
     @PostMapping("/orders/{orderId}/discount")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> applyDiscountCode(@PathVariable Long orderId, @RequestParam String discountCode) {
         log.debug("REST request to apply discount code to order : {}", orderId);
         OrderDTO result = customerService.applyDiscountCode(orderId, discountCode);
@@ -44,6 +48,7 @@ public class CustomerController {
     }
 
     @PostMapping("/orders/{orderId}/finalize")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> finalizeOrder(@PathVariable Long orderId) {
         log.debug("REST request to finalize order : {}", orderId);
         OrderDTO result = customerService.finalizeOrder(orderId);
