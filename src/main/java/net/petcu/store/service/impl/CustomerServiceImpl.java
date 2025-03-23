@@ -1,6 +1,7 @@
 package net.petcu.store.service.impl;
 
 import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.petcu.store.domain.Order;
 import net.petcu.store.domain.OrderItem;
@@ -124,5 +125,11 @@ public class CustomerServiceImpl implements CustomerService {
         log.debug("Order orderId={} finalized successfully", orderId);
 
         return new OrderDTO(order);
+    }
+
+    @Override
+    public List<Product> findProductsByName(String name) {
+        log.debug("Request to find products with name containing={}", name);
+        return productRepository.findByNameContainingIgnoreCase(name);
     }
 }

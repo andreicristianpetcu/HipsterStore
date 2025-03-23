@@ -1,5 +1,7 @@
 package net.petcu.store.service;
 
+import java.util.List;
+import net.petcu.store.domain.Product;
 import net.petcu.store.service.dto.OrderDTO;
 
 public interface CustomerService {
@@ -10,4 +12,6 @@ public interface CustomerService {
     OrderDTO applyDiscountCode(Long orderId, String discountCode);
 
     OrderDTO finalizeOrder(Long orderId);
+
+    List<Product> findProductsByName(String name);
 }

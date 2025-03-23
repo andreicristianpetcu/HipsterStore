@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import net.petcu.store.domain.*;
 import net.petcu.store.domain.enumeration.OrderStatus;
@@ -51,6 +52,7 @@ class CustomerServiceTest {
     private static final Long DEFAULT_PRODUCT_ID = 2L;
     private static final Long DEFAULT_QUANTITY = 2L;
     private static final Double DEFAULT_PRICE = 10.0;
+    private static final String DEFAULT_PRODUCT_NAME = "Test Product";
     private User user;
 
     @BeforeEach
@@ -203,6 +205,40 @@ class CustomerServiceTest {
         verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
         verify(paymentService, never()).processPayment(any());
         verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void GivenExistingProducts_WhenFindProductsByName_ShouldReturnMatchingProducts() {
+        // Arrange
+        String searchTerm = "Test";
+        Product product1 = createProduct(1L, "Test Product");
+        Product product2 = createProduct(2L, "Test Item");
+        List<Product> expectedProducts = List.of(product1, product2);
+        when(productRepository.findByNameContainingIgnoreCase(searchTerm)).thenReturn(expectedProducts);
+
+        // Act
+        List<Product> result = customerService.findProductsByName(searchTerm);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expectedProducts);
+        verify(productRepository).findByNameContainingIgnoreCase(searchTerm);
+    }
+
+    @Test
+    void GivenNoMatchingProducts_WhenFindProductsByName_ShouldReturnEmptyList() {
+        // Arrange
+        String searchTerm = "NonExistent";
+        when(productRepository.findByNameContainingIgnoreCase(searchTerm)).thenReturn(List.of());
+
+        // Act
+        List<Product> result = customerService.findProductsByName(searchTerm);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
+        verify(productRepository).findByNameContainingIgnoreCase(searchTerm);
     }
 
     private void setupSecurityContext(MockedStatic<SecurityUtils> securityUtils) {
