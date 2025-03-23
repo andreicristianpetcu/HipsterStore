@@ -25,9 +25,16 @@ Entities and their role:
 TODO:
 
 - Implement some functions, for example: add-product, find-product, change-price or others
+  - Customer facing features in CustomerController
+  - Admins can call directly the resources from net.petcu.store.web.rest package
 - Implement a basic authentication mechanism and role based endpoint access
+  - Non-admins have ROLE_USER and can do operations on their own orders
+  - Admins, which have ROLE_ADMIN, can create products/discounts etc
 - Design error mechanism and handling plus logging
+  - All custom exceptions extend StoreException and have HTTP status codes
+  - Logging is done with SLF4J, Logback, SpringAOP and manual logs for code clarity.
 - Write unit tests, at least for one class
+  - CustomerServiceTest has clear and simple tests
 - Use Java 17+ features
   - RandomGenerator in DummyPaymentService
 - Add a small Readme to document the project ✔️
