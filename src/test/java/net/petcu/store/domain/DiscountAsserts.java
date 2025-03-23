@@ -49,7 +49,8 @@ public class DiscountAsserts {
             .as("Verify Discount relevant properties")
             .satisfies(a -> assertThat(a.getDiscountCode()).as("check discountCode").isEqualTo(expected.getDiscountCode()))
             .satisfies(a -> assertThat(a.getDiscountType()).as("check discountType").isEqualTo(expected.getDiscountType()))
-            .satisfies(a -> assertThat(a.getUsed()).as("check used").isEqualTo(expected.getUsed()));
+            .satisfies(a -> assertThat(a.getUsed()).as("check used").isEqualTo(expected.getUsed()))
+            .satisfies(a -> assertThat(a.getAmount()).as("check amount").isEqualTo(expected.getAmount()));
     }
 
     /**

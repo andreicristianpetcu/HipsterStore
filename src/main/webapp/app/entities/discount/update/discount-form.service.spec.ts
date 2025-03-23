@@ -23,6 +23,7 @@ describe('Discount Form Service', () => {
             discountCode: expect.any(Object),
             discountType: expect.any(Object),
             used: expect.any(Object),
+            amount: expect.any(Object),
           }),
         );
       });
@@ -36,6 +37,7 @@ describe('Discount Form Service', () => {
             discountCode: expect.any(Object),
             discountType: expect.any(Object),
             used: expect.any(Object),
+            amount: expect.any(Object),
           }),
         );
       });

@@ -35,6 +35,9 @@ public class Discount implements Serializable {
     @Column(name = "used")
     private Boolean used;
 
+    @Column(name = "amount")
+    private Double amount;
+
     @JsonIgnoreProperties(value = { "user", "orderItems", "discount" }, allowSetters = true)
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "discount")
     private Order order;
@@ -93,6 +96,19 @@ public class Discount implements Serializable {
         this.used = used;
     }
 
+    public Double getAmount() {
+        return this.amount;
+    }
+
+    public Discount amount(Double amount) {
+        this.setAmount(amount);
+        return this;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
     public Order getOrder() {
         return this.order;
     }
@@ -139,6 +155,7 @@ public class Discount implements Serializable {
             ", discountCode='" + getDiscountCode() + "'" +
             ", discountType='" + getDiscountType() + "'" +
             ", used='" + getUsed() + "'" +
+            ", amount=" + getAmount() +
             "}";
     }
 }

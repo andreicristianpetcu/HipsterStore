@@ -131,6 +131,9 @@ public class DiscountResource {
                 if (discount.getUsed() != null) {
                     existingDiscount.setUsed(discount.getUsed());
                 }
+                if (discount.getAmount() != null) {
+                    existingDiscount.setAmount(discount.getAmount());
+                }
 
                 return existingDiscount;
             })

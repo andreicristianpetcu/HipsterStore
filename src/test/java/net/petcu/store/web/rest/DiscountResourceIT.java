@@ -43,6 +43,9 @@ class DiscountResourceIT {
     private static final Boolean DEFAULT_USED = false;
     private static final Boolean UPDATED_USED = true;
 
+    private static final Double DEFAULT_AMOUNT = 1D;
+    private static final Double UPDATED_AMOUNT = 2D;
+
     private static final String ENTITY_API_URL = "/api/discounts";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
@@ -72,7 +75,11 @@ class DiscountResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Discount createEntity() {
-        return new Discount().discountCode(DEFAULT_DISCOUNT_CODE).discountType(DEFAULT_DISCOUNT_TYPE).used(DEFAULT_USED);
+        return new Discount()
+            .discountCode(DEFAULT_DISCOUNT_CODE)
+            .discountType(DEFAULT_DISCOUNT_TYPE)
+            .used(DEFAULT_USED)
+            .amount(DEFAULT_AMOUNT);
     }
 
     /**
@@ -82,7 +89,11 @@ class DiscountResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Discount createUpdatedEntity() {
-        return new Discount().discountCode(UPDATED_DISCOUNT_CODE).discountType(UPDATED_DISCOUNT_TYPE).used(UPDATED_USED);
+        return new Discount()
+            .discountCode(UPDATED_DISCOUNT_CODE)
+            .discountType(UPDATED_DISCOUNT_TYPE)
+            .used(UPDATED_USED)
+            .amount(UPDATED_AMOUNT);
     }
 
     @BeforeEach
@@ -151,7 +162,8 @@ class DiscountResourceIT {
             .andExpect(jsonPath("$.[*].id").value(hasItem(discount.getId().intValue())))
             .andExpect(jsonPath("$.[*].discountCode").value(hasItem(DEFAULT_DISCOUNT_CODE.toString())))
             .andExpect(jsonPath("$.[*].discountType").value(hasItem(DEFAULT_DISCOUNT_TYPE.toString())))
-            .andExpect(jsonPath("$.[*].used").value(hasItem(DEFAULT_USED)));
+            .andExpect(jsonPath("$.[*].used").value(hasItem(DEFAULT_USED)))
+            .andExpect(jsonPath("$.[*].amount").value(hasItem(DEFAULT_AMOUNT)));
     }
 
     @Test
@@ -168,7 +180,8 @@ class DiscountResourceIT {
             .andExpect(jsonPath("$.id").value(discount.getId().intValue()))
             .andExpect(jsonPath("$.discountCode").value(DEFAULT_DISCOUNT_CODE.toString()))
             .andExpect(jsonPath("$.discountType").value(DEFAULT_DISCOUNT_TYPE.toString()))
-            .andExpect(jsonPath("$.used").value(DEFAULT_USED));
+            .andExpect(jsonPath("$.used").value(DEFAULT_USED))
+            .andExpect(jsonPath("$.amount").value(DEFAULT_AMOUNT));
     }
 
     @Test
@@ -190,7 +203,7 @@ class DiscountResourceIT {
         Discount updatedDiscount = discountRepository.findById(discount.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedDiscount are not directly saved in db
         em.detach(updatedDiscount);
-        updatedDiscount.discountCode(UPDATED_DISCOUNT_CODE).discountType(UPDATED_DISCOUNT_TYPE).used(UPDATED_USED);
+        updatedDiscount.discountCode(UPDATED_DISCOUNT_CODE).discountType(UPDATED_DISCOUNT_TYPE).used(UPDATED_USED).amount(UPDATED_AMOUNT);
 
         restDiscountMockMvc
             .perform(
@@ -296,7 +309,11 @@ class DiscountResourceIT {
         Discount partialUpdatedDiscount = new Discount();
         partialUpdatedDiscount.setId(discount.getId());
 
-        partialUpdatedDiscount.discountCode(UPDATED_DISCOUNT_CODE).discountType(UPDATED_DISCOUNT_TYPE).used(UPDATED_USED);
+        partialUpdatedDiscount
+            .discountCode(UPDATED_DISCOUNT_CODE)
+            .discountType(UPDATED_DISCOUNT_TYPE)
+            .used(UPDATED_USED)
+            .amount(UPDATED_AMOUNT);
 
         restDiscountMockMvc
             .perform(

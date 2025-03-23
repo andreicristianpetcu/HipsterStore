@@ -21,6 +21,7 @@ type DiscountFormGroupContent = {
   discountCode: FormControl<IDiscount['discountCode']>;
   discountType: FormControl<IDiscount['discountType']>;
   used: FormControl<IDiscount['used']>;
+  amount: FormControl<IDiscount['amount']>;
 };
 
 export type DiscountFormGroup = FormGroup<DiscountFormGroupContent>;
@@ -43,6 +44,7 @@ export class DiscountFormService {
       discountCode: new FormControl(discountRawValue.discountCode),
       discountType: new FormControl(discountRawValue.discountType),
       used: new FormControl(discountRawValue.used),
+      amount: new FormControl(discountRawValue.amount),
     });
   }
 

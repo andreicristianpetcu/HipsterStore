@@ -5,7 +5,8 @@ export const sampleWithRequiredData: IDiscount = {
 };
 
 export const sampleWithPartialData: IDiscount = {
-  id: 3137,
+  id: 39,
+  amount: 5124.95,
 };
 
 export const sampleWithFullData: IDiscount = {
@@ -13,6 +14,7 @@ export const sampleWithFullData: IDiscount = {
   discountCode: 'd57028ee-6829-420c-a013-cd23ca0ddd3b',
   discountType: 'PERCENTAGE',
   used: false,
+  amount: 27024.24,
 };
 
 export const sampleWithNewData: NewDiscount = {

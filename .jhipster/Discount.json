@@ -15,6 +15,10 @@
     {
       "fieldName": "used",
       "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "amount",
+      "fieldType": "Double"
     }
   ],
   "name": "Discount",

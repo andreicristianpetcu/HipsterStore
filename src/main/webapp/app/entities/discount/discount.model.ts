@@ -5,6 +5,7 @@ export interface IDiscount {
   discountCode?: string | null;
   discountType?: keyof typeof DiscountType | null;
   used?: boolean | null;
+  amount?: number | null;
 }
 
 export type NewDiscount = Omit<IDiscount, 'id'> & { id: null };
