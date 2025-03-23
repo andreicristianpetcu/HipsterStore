@@ -1,10 +1,10 @@
 package net.petcu.store.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import net.petcu.store.domain.*;
 import net.petcu.store.domain.enumeration.OrderStatus;
@@ -45,47 +45,39 @@ class CustomerServiceTest {
     private static final String DEFAULT_LOGIN = "johndoe";
     private static final Long DEFAULT_ORDER_ID = 1L;
     private static final Long DEFAULT_PRODUCT_ID = 2L;
-    private static final Integer DEFAULT_QUANTITY = 2;
+    private static final Long DEFAULT_QUANTITY = 2L;
     private static final Double DEFAULT_PRICE = 10.0;
+    private User user;
 
     @BeforeEach
     void setUp() {
         customerService = new CustomerServiceImpl(orderRepository, userRepository, productRepository, pricedProductRepository);
+        this.user = createUser(DEFAULT_LOGIN, 1L);
     }
 
     @Test
     void GivenAnExistingUser_WhenCreateNewOrder_ShouldSaveOrderToDb() {
         // Arrange
-        User user = new User();
-        user.setLogin(DEFAULT_LOGIN);
-        user.setId(1L);
-
-        Order expectedOrder = new Order().id(1L).date(Instant.now()).status(OrderStatus.NEW).user(user);
-
+        Order expectedOrder = createOrder(DEFAULT_ORDER_ID, user);
         try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
             securityUtils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of(DEFAULT_LOGIN));
-
             when(userRepository.findOneByLogin(DEFAULT_LOGIN)).thenReturn(Optional.of(user));
-            when(orderRepository.save(any(Order.class))).thenReturn(expectedOrder);
+            when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+                assertThatOrderIsEqual(invocation.getArgument(0), expectedOrder);
+                return expectedOrder;
+            });
 
             // Act
             OrderDTO result = customerService.createOrder();
 
             // Assert
-            assertThat(result).isNotNull();
-            assertThat(result.id()).isEqualTo(expectedOrder.getId());
-            assertThat(result.status()).isEqualTo(OrderStatus.NEW);
-            assertThat(result.userLogin()).isEqualTo(DEFAULT_LOGIN);
-            assertThat(result.subtotal()).isEqualTo(0);
-            assertThat(result.finalPrice()).isEqualTo(0);
-
+            assertOrderDtoIsEqual(result, expectedOrder);
             verify(userRepository).findOneByLogin(DEFAULT_LOGIN);
-            verify(orderRepository).save(any(Order.class));
         }
     }
 
     @Test
-    void GivenMissingUser_WhenCreateOrder_ThenShouldThrowUnauthorizedException() {
+    void GivenMissingUser_WhenCreateNewOrder_ThenShouldThrowUnauthorizedException() {
         try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
             securityUtils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
@@ -99,57 +91,22 @@ class CustomerServiceTest {
     }
 
     @Test
-    @Disabled
     void GivenValidOrderAndProduct_WhenAddItemToOrder_ShouldUpdateOrderWithNewItem() {
         // Arrange
-        User user = new User();
-        user.setLogin(DEFAULT_LOGIN);
-        user.setId(1L);
-
-        Order order = new Order().id(DEFAULT_ORDER_ID).date(Instant.now()).status(OrderStatus.NEW).user(user);
-
-        Product product = new Product();
-        product.setId(DEFAULT_PRODUCT_ID);
-        product.setName("Test Product");
-
-        PricedProduct pricedProduct = new PricedProduct();
-        pricedProduct.setId(3L);
-        //        pricedProduct.setPrice(DEFAULT_PRICE);
-        pricedProduct.setProduct(product);
-        pricedProduct.setActive(true);
-        //        pricedProduct.setStartDate(Instant.now().minusSeconds(3600));
-        //        pricedProduct.setEndDate(Instant.now().plusSeconds(3600));
-
-        OrderItem orderItem = new OrderItem();
-        orderItem.setId(4L);
-        orderItem.setOrder(order);
-        orderItem.setProduct(product);
-        //        orderItem.setPrice(pricedProduct);
-        //        orderItem.setQuantity(DEFAULT_QUANTITY);
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        Product product = createProduct(DEFAULT_PRODUCT_ID, "Test Product");
+        PricedProduct pricedProduct = createPricedProduct(3L, product, DEFAULT_PRICE);
 
         try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
-            securityUtils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of(DEFAULT_LOGIN));
-
-            when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
-            when(productRepository.findById(DEFAULT_PRODUCT_ID)).thenReturn(Optional.of(product));
-            when(pricedProductRepository.findLatestActiveByProductId(DEFAULT_PRODUCT_ID)).thenReturn(Optional.of(pricedProduct));
-            when(orderRepository.save(any(Order.class))).thenReturn(order);
+            setupSecurityContext(securityUtils);
+            setupRepositoryMocks(order, product, pricedProduct);
 
             // Act
             OrderDTO result = customerService.addItemToOrder(DEFAULT_ORDER_ID, DEFAULT_PRODUCT_ID, DEFAULT_QUANTITY);
 
             // Assert
-            assertThat(result).isNotNull();
-            assertThat(result.id()).isEqualTo(DEFAULT_ORDER_ID);
-            assertThat(result.subtotal()).isEqualTo(DEFAULT_PRICE * DEFAULT_QUANTITY);
-            assertThat(result.finalPrice()).isEqualTo(DEFAULT_PRICE * DEFAULT_QUANTITY);
-            assertThat(order.getOrderItems()).hasSize(1);
-            assertThat(order.getOrderItems().iterator().next().getQuantity()).isEqualTo(DEFAULT_QUANTITY);
-
-            verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
-            verify(productRepository).findById(DEFAULT_PRODUCT_ID);
-            verify(pricedProductRepository).findLatestActiveByProductId(DEFAULT_PRODUCT_ID);
-            verify(orderRepository).save(order);
+            assertOrderResult(result, order, product, pricedProduct);
+            verifyRepositoryInteractions(order, product);
         }
     }
 
@@ -162,10 +119,98 @@ class CustomerServiceTest {
         assertThatThrownBy(() -> customerService.addItemToOrder(DEFAULT_ORDER_ID, DEFAULT_PRODUCT_ID, DEFAULT_QUANTITY))
             .isInstanceOf(OrderNotFoundException.class)
             .hasMessage("Order not found: " + DEFAULT_ORDER_ID);
-
         verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
-        verify(productRepository, never()).findById(any());
-        verify(pricedProductRepository, never()).findLatestActiveByProductId(any());
-        verify(orderRepository, never()).save(any());
+    }
+
+    private void setupSecurityContext(MockedStatic<SecurityUtils> securityUtils) {
+        securityUtils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of(DEFAULT_LOGIN));
+    }
+
+    private void setupRepositoryMocks(Order order, Product product, PricedProduct pricedProduct) {
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(productRepository.findById(DEFAULT_PRODUCT_ID)).thenReturn(Optional.of(product));
+        when(pricedProductRepository.findLatestActiveByProductId(DEFAULT_PRODUCT_ID)).thenReturn(Optional.of(pricedProduct));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            assertSavedOrderItem(savedOrder, product, pricedProduct);
+            return savedOrder;
+        });
+    }
+
+    private void assertSavedOrderItem(Order savedOrder, Product product, PricedProduct pricedProduct) {
+        assertThat(savedOrder.getOrderItems()).hasSize(1);
+        OrderItem savedItem = savedOrder.getOrderItems().iterator().next();
+        assertOrderItemIsValid(savedItem, product, pricedProduct, DEFAULT_QUANTITY);
+    }
+
+    private void assertOrderResult(OrderDTO result, Order order, Product product, PricedProduct pricedProduct) {
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(DEFAULT_ORDER_ID);
+        assertOrderTotalsAreCorrect(order, DEFAULT_PRICE * DEFAULT_QUANTITY, DEFAULT_PRICE * DEFAULT_QUANTITY);
+    }
+
+    private void verifyRepositoryInteractions(Order order, Product product) {
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(productRepository).findById(DEFAULT_PRODUCT_ID);
+        verify(pricedProductRepository).findLatestActiveByProductId(DEFAULT_PRODUCT_ID);
+        verify(orderRepository).save(order);
+    }
+
+    private User createUser(String login, Long id) {
+        User user = new User();
+        user.setLogin(login);
+        user.setId(id);
+        return user;
+    }
+
+    private Order createOrder(Long id, User user) {
+        return new Order().id(id).date(Instant.now()).status(OrderStatus.NEW).user(user).subtotal(0.0d).finalPrice(0.0d);
+    }
+
+    private Product createProduct(Long id, String name) {
+        Product product = new Product();
+        product.setId(id);
+        product.setName(name);
+        return product;
+    }
+
+    private PricedProduct createPricedProduct(Long id, Product product, Double priceValue) {
+        PricedProduct pricedProduct = new PricedProduct();
+        pricedProduct.setId(id);
+        var price = new Price();
+        price.setValue(priceValue);
+        pricedProduct.setPrice(price);
+        pricedProduct.setProduct(product);
+        pricedProduct.setActive(true);
+        return pricedProduct;
+    }
+
+    private static void assertThatOrderIsEqual(Order actualOrder, Order expectedOrder) {
+        assertThat(actualOrder.getUser()).isEqualTo(expectedOrder.getUser());
+        assertThat(actualOrder.getStatus()).isEqualTo(expectedOrder.getStatus());
+        assertThat(actualOrder.getSubtotal()).isEqualTo(expectedOrder.getSubtotal());
+        assertThat(actualOrder.getFinalPrice()).isEqualTo(expectedOrder.getFinalPrice());
+        assertThat(actualOrder.getDate()).isCloseTo(expectedOrder.getDate(), within(1, ChronoUnit.SECONDS));
+    }
+
+    private void assertOrderDtoIsEqual(OrderDTO actual, Order expectedOrder) {
+        assertThat(actual).isNotNull();
+        assertThat(actual.id()).isEqualTo(expectedOrder.getId());
+        assertThat(actual.status()).isEqualTo(expectedOrder.getStatus());
+        assertThat(actual.userLogin()).isEqualTo(expectedOrder.getUser().getLogin());
+        assertThat(actual.subtotal()).isEqualTo(expectedOrder.getSubtotal());
+        assertThat(actual.finalPrice()).isEqualTo(expectedOrder.getFinalPrice());
+    }
+
+    private void assertOrderItemIsValid(OrderItem item, Product product, PricedProduct pricedProduct, Long quantity) {
+        assertThat(item).isNotNull();
+        assertThat(item.getQuantity()).isEqualTo(quantity);
+        assertThat(item.getPrice().getValue()).isEqualTo(pricedProduct.getPrice().getValue());
+        assertThat(item.getProduct()).isEqualTo(product);
+    }
+
+    private void assertOrderTotalsAreCorrect(Order order, Double expectedSubtotal, Double expectedFinalPrice) {
+        assertThat(order.getSubtotal()).isEqualTo(expectedSubtotal);
+        assertThat(order.getFinalPrice()).isEqualTo(expectedFinalPrice);
     }
 }

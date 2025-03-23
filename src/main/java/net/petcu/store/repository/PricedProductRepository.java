@@ -42,5 +42,13 @@ public interface PricedProductRepository extends JpaRepository<PricedProduct, Lo
     )
     Optional<PricedProduct> findOneWithToOneRelationships(@Param("id") Long id);
 
-    Object findLatestActiveByProductId(Long defaultProductId);
+    @Query(
+        """
+        select pp from PricedProduct pp
+        where pp.product.id = :productId
+        and pp.active = true
+        order by pp.startDate desc
+        """
+    )
+    Optional<PricedProduct> findLatestActiveByProductId(@Param("productId") Long productId);
 }

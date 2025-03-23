@@ -5,7 +5,7 @@ import net.petcu.store.service.dto.OrderDTO;
 public interface CustomerService {
     OrderDTO createOrder();
 
-    OrderDTO addItemToOrder(Long orderId, Long productId, Integer quantity);
+    OrderDTO addItemToOrder(Long orderId, Long productId, Long quantity);
 
     OrderDTO applyDiscountCode(Long orderId, String discountCode);
 

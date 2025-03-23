@@ -31,7 +31,7 @@ public class CustomerController {
     public ResponseEntity<OrderDTO> addItemToOrder(
         @PathVariable Long orderId,
         @RequestParam Long productId,
-        @RequestParam(defaultValue = "1") Integer quantity
+        @RequestParam(defaultValue = "1") Long quantity
     ) {
         log.debug("REST request to add item to order : {}", orderId);
         OrderDTO result = customerService.addItemToOrder(orderId, productId, quantity);
