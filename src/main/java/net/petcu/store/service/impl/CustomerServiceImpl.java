@@ -4,6 +4,8 @@ import java.time.Instant;
 import net.petcu.store.domain.Order;
 import net.petcu.store.domain.User;
 import net.petcu.store.domain.enumeration.OrderStatus;
+import net.petcu.store.exception.UnauthorizedException;
+import net.petcu.store.exception.UserNotFoundException;
 import net.petcu.store.repository.OrderRepository;
 import net.petcu.store.repository.UserRepository;
 import net.petcu.store.security.SecurityUtils;
@@ -30,11 +32,13 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public OrderDTO createOrder() {
-        String currentUser = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new IllegalStateException("Current user not found"));
+        String currentUser = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new UnauthorizedException("User is not authenticated"));
 
         log.debug("Request to create a new order for user: {}", currentUser);
 
-        User user = userRepository.findOneByLogin(currentUser).orElseThrow(() -> new IllegalStateException("User not found"));
+        User user = userRepository
+            .findOneByLogin(currentUser)
+            .orElseThrow(() -> new UserNotFoundException("User not found: " + currentUser));
 
         Order order = new Order().date(Instant.now()).status(OrderStatus.NEW).user(user);
 
