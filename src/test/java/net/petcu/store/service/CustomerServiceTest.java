@@ -7,20 +7,17 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.petcu.store.domain.*;
+import net.petcu.store.domain.enumeration.DiscountType;
 import net.petcu.store.domain.enumeration.OrderStatus;
-import net.petcu.store.exception.InvalidOrderStatusException;
-import net.petcu.store.exception.OrderNotFoundException;
-import net.petcu.store.exception.PaymentFailedException;
-import net.petcu.store.exception.UnauthorizedException;
-import net.petcu.store.repository.OrderRepository;
-import net.petcu.store.repository.PricedProductRepository;
-import net.petcu.store.repository.ProductRepository;
-import net.petcu.store.repository.UserRepository;
+import net.petcu.store.exception.*;
+import net.petcu.store.repository.*;
 import net.petcu.store.security.SecurityUtils;
 import net.petcu.store.service.dto.OrderDTO;
 import net.petcu.store.service.impl.CustomerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -43,6 +40,9 @@ class CustomerServiceTest {
     private PricedProductRepository pricedProductRepository;
 
     @Mock
+    private DiscountRepository discountRepository;
+
+    @Mock
     private PaymentService paymentService;
 
     private CustomerService customerService;
@@ -55,6 +55,10 @@ class CustomerServiceTest {
     private static final String DEFAULT_PRODUCT_NAME = "Test Product";
     private User user;
 
+    private static final UUID PERCENTAGE_DISCOUNT_CODE = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+    private static final UUID FIXED_DISCOUNT_CODE = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+    private static final UUID BOGO_DISCOUNT_CODE = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
+
     @BeforeEach
     void setUp() {
         customerService = new CustomerServiceImpl(
@@ -62,6 +66,7 @@ class CustomerServiceTest {
             userRepository,
             productRepository,
             pricedProductRepository,
+            discountRepository,
             paymentService
         );
         this.user = createUser(DEFAULT_LOGIN, 1L);
@@ -241,6 +246,125 @@ class CustomerServiceTest {
         verify(productRepository).findByNameContainingIgnoreCase(searchTerm);
     }
 
+    @Test
+    void GivenValidOrder_WhenApplyPercentageDiscount_ShouldUpdateFinalPrice() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        order.setSubtotal(100.0);
+        order.setFinalPrice(100.0);
+        Discount discount = createDiscount(PERCENTAGE_DISCOUNT_CODE, DiscountType.PERCENTAGE, 20.0);
+
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(discountRepository.findByDiscountCode(PERCENTAGE_DISCOUNT_CODE)).thenReturn(List.of(discount));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            assertThat(savedOrder.getFinalPrice()).isEqualTo(80.0); // 100 - 20%
+            return savedOrder;
+        });
+
+        // Act
+        OrderDTO result = customerService.applyDiscountCode(DEFAULT_ORDER_ID, PERCENTAGE_DISCOUNT_CODE);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(DEFAULT_ORDER_ID);
+        assertThat(result.finalPrice()).isEqualTo(80.0);
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(discountRepository).findByDiscountCode(PERCENTAGE_DISCOUNT_CODE);
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void GivenValidOrder_WhenApplyFixedDiscount_ShouldUpdateFinalPrice() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        order.setSubtotal(100.0);
+        order.setFinalPrice(100.0);
+        Discount discount = createDiscount(FIXED_DISCOUNT_CODE, DiscountType.FIXED, 30.0);
+
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(discountRepository.findByDiscountCode(FIXED_DISCOUNT_CODE)).thenReturn(List.of(discount));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            assertThat(savedOrder.getFinalPrice()).isEqualTo(70.0); // 100 - 30
+            return savedOrder;
+        });
+
+        // Act
+        OrderDTO result = customerService.applyDiscountCode(DEFAULT_ORDER_ID, FIXED_DISCOUNT_CODE);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(DEFAULT_ORDER_ID);
+        assertThat(result.finalPrice()).isEqualTo(70.0);
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(discountRepository).findByDiscountCode(FIXED_DISCOUNT_CODE);
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void GivenInvalidPercentageDiscount_WhenApplyDiscount_ShouldThrowException() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        order.setSubtotal(100.0);
+        order.setFinalPrice(100.0);
+        Discount discount = createDiscount(PERCENTAGE_DISCOUNT_CODE, DiscountType.PERCENTAGE, 150.0);
+
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(discountRepository.findByDiscountCode(PERCENTAGE_DISCOUNT_CODE)).thenReturn(List.of(discount));
+
+        // Act & Assert
+        assertThatThrownBy(() -> customerService.applyDiscountCode(DEFAULT_ORDER_ID, PERCENTAGE_DISCOUNT_CODE))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Percentage discount must be between 0 and 100");
+
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(discountRepository).findByDiscountCode(PERCENTAGE_DISCOUNT_CODE);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void GivenInvalidFixedDiscount_WhenApplyDiscount_ShouldThrowException() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        order.setSubtotal(100.0);
+        order.setFinalPrice(100.0);
+        Discount discount = createDiscount(FIXED_DISCOUNT_CODE, DiscountType.FIXED, 100.0);
+
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(discountRepository.findByDiscountCode(FIXED_DISCOUNT_CODE)).thenReturn(List.of(discount));
+
+        // Act & Assert
+        assertThatThrownBy(() -> customerService.applyDiscountCode(DEFAULT_ORDER_ID, FIXED_DISCOUNT_CODE))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Fixed discount cannot be greater than or equal to subtotal");
+
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(discountRepository).findByDiscountCode(FIXED_DISCOUNT_CODE);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void GivenNonExistentDiscountCode_WhenApplyDiscount_ShouldThrowException() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        order.setSubtotal(100.0);
+        order.setFinalPrice(100.0);
+        UUID nonExistentCode = UUID.fromString("550e8400-e29b-41d4-a716-446655440003");
+
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(discountRepository.findByDiscountCode(nonExistentCode)).thenReturn(List.of());
+
+        // Act & Assert
+        assertThatThrownBy(() -> customerService.applyDiscountCode(DEFAULT_ORDER_ID, nonExistentCode))
+            .isInstanceOf(DiscountCodeNotFoundException.class)
+            .hasMessage("Did not find discount code=" + nonExistentCode);
+
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(discountRepository).findByDiscountCode(nonExistentCode);
+        verify(orderRepository, never()).save(any());
+    }
+
     private void setupSecurityContext(MockedStatic<SecurityUtils> securityUtils) {
         securityUtils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of(DEFAULT_LOGIN));
     }
@@ -331,5 +455,13 @@ class CustomerServiceTest {
     private void assertOrderTotalsAreCorrect(Order order, Double expectedSubtotal, Double expectedFinalPrice) {
         assertThat(order.getSubtotal()).isEqualTo(expectedSubtotal);
         assertThat(order.getFinalPrice()).isEqualTo(expectedFinalPrice);
+    }
+
+    private Discount createDiscount(UUID code, DiscountType type, double value) {
+        Discount discount = new Discount();
+        discount.setDiscountCode(code);
+        discount.setDiscountType(type);
+        discount.setAmount(value);
+        return discount;
     }
 }

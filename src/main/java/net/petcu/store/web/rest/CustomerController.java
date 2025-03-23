@@ -1,5 +1,6 @@
 package net.petcu.store.web.rest;
 
+import java.util.UUID;
 import net.petcu.store.service.CustomerService;
 import net.petcu.store.service.dto.OrderDTO;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class CustomerController {
 
     @PostMapping("/orders/{orderId}/discount")
     @PreAuthorize("hasAnyAuthority('ROLE_USER')")
-    public ResponseEntity<OrderDTO> applyDiscountCode(@PathVariable Long orderId, @RequestParam String discountCode) {
+    public ResponseEntity<OrderDTO> applyDiscountCode(@PathVariable Long orderId, @RequestParam UUID discountCode) {
         log.debug("REST request to apply discount code to orderId={}", orderId);
         OrderDTO result = customerService.applyDiscountCode(orderId, discountCode);
         return ResponseEntity.ok(result);

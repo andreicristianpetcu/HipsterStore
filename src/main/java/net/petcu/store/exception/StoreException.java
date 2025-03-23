@@ -8,7 +8,8 @@ public abstract sealed class StoreException
         UserNotFoundException,
         ProductNotFoundException,
         PaymentFailedException,
-        InvalidOrderStatusException {
+        InvalidOrderStatusException,
+        DiscountCodeNotFoundException {
 
     protected StoreException(String message) {
         super(message);

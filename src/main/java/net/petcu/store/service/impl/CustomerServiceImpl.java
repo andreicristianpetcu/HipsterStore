@@ -2,23 +2,13 @@ package net.petcu.store.service.impl;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import net.petcu.store.domain.Order;
-import net.petcu.store.domain.OrderItem;
-import net.petcu.store.domain.PricedProduct;
-import net.petcu.store.domain.Product;
-import net.petcu.store.domain.User;
+import net.petcu.store.domain.*;
+import net.petcu.store.domain.enumeration.DiscountType;
 import net.petcu.store.domain.enumeration.OrderStatus;
-import net.petcu.store.exception.InvalidOrderStatusException;
-import net.petcu.store.exception.OrderNotFoundException;
-import net.petcu.store.exception.PaymentFailedException;
-import net.petcu.store.exception.ProductNotFoundException;
-import net.petcu.store.exception.UnauthorizedException;
-import net.petcu.store.exception.UserNotFoundException;
-import net.petcu.store.repository.OrderRepository;
-import net.petcu.store.repository.PricedProductRepository;
-import net.petcu.store.repository.ProductRepository;
-import net.petcu.store.repository.UserRepository;
+import net.petcu.store.exception.*;
+import net.petcu.store.repository.*;
 import net.petcu.store.security.SecurityUtils;
 import net.petcu.store.service.CustomerService;
 import net.petcu.store.service.PaymentService;
@@ -38,6 +28,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final PricedProductRepository pricedProductRepository;
+    private final DiscountRepository discountRepository;
     private final PaymentService paymentService;
 
     @Override
@@ -93,9 +84,51 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public OrderDTO applyDiscountCode(Long orderId, String discountCode) {
+    public OrderDTO applyDiscountCode(Long orderId, UUID discountCode) {
         log.debug("Request to apply discount code {} to order {}", discountCode, orderId);
-        throw new UnsupportedOperationException("Not ready yet");
+
+        Order order = orderRepository
+            .findOneWithEagerRelationships(orderId)
+            .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+        log.debug("Found order orderId={} with subtotal={}", orderId, order.getSubtotal());
+
+        if (order.getStatus() != OrderStatus.NEW) {
+            log.warn("Cannot apply discount to order orderId={} with status={}", orderId, order.getStatus());
+            throw new InvalidOrderStatusException("Order is not in NEW status");
+        }
+
+        List<Discount> foundDiscounts = discountRepository.findByDiscountCode(discountCode);
+        if (foundDiscounts.isEmpty()) {
+            throw new DiscountCodeNotFoundException("Did not find discount code=" + discountCode);
+        }
+        var discount = foundDiscounts.get(0);
+        DiscountType discountType = discount.getDiscountType();
+        double discountAmount = discount.getAmount();
+        double finalPrice = calculateFinalPrice(order.getSubtotal(), discountType, discountAmount);
+
+        log.debug("Applying discount type={} value={} to order orderId={}", discountType, discountAmount, orderId);
+        order.setFinalPrice(finalPrice);
+        order = orderRepository.save(order);
+        log.debug("Updated order orderId={} with finalPrice={}", orderId, finalPrice);
+
+        return new OrderDTO(order);
+    }
+
+    private double calculateFinalPrice(double subtotal, DiscountType discountType, double discountValue) {
+        return switch (discountType) {
+            case PERCENTAGE -> {
+                if (discountValue < 0 || discountValue > 100) {
+                    throw new IllegalArgumentException("Percentage discount must be between 0 and 100");
+                }
+                yield subtotal * (1 - discountValue / 100);
+            }
+            case FIXED -> {
+                if (discountValue >= subtotal) {
+                    throw new IllegalArgumentException("Fixed discount cannot be greater than or equal to subtotal");
+                }
+                yield subtotal - discountValue;
+            }
+        };
     }
 
     @Override

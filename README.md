@@ -39,6 +39,7 @@ TODO:
   - AdminControllerTest is an example of a controller test
 - Use Java 17+ features
   - RandomGenerator in DummyPaymentService
+  - Abstract sealed classes in StoreException
 - Add a small Readme to document the project ✔️
 
 ## Project Structure
