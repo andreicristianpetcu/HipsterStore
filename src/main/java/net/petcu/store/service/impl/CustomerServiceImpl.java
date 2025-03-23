@@ -56,32 +56,31 @@ public class CustomerServiceImpl implements CustomerService {
     public OrderDTO addItemToOrder(Long orderId, Long productId, Long quantity) {
         log.debug("Request to add item productId={} quantity={} to orderId={}", productId, quantity, orderId);
 
-        // Find the order
+        log.debug("Looking up order orderId={}", orderId);
         Order order = orderRepository
             .findOneWithEagerRelationships(orderId)
             .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
 
-        // Find the product
+        log.debug("Looking up product productId={}", productId);
         Product product = productRepository
             .findById(productId)
             .orElseThrow(() -> new ProductNotFoundException("Product not found: " + productId));
 
-        // Find the latest active priced product
+        log.debug("Looking up latest active price for product productId={}", productId);
         PricedProduct pricedProduct = pricedProductRepository
             .findLatestActiveByProductId(productId)
             .orElseThrow(() -> new ProductNotFoundException("No active price found for product: " + productId));
 
-        // Create and add the order item
+        log.debug("Creating order item with productId={} quantity={}", productId, quantity);
         OrderItem orderItem = new OrderItem().order(order).product(product).price(pricedProduct.getPrice()).quantity(quantity);
 
         order.addOrderItems(orderItem);
 
-        // Update order totals
         double itemTotal = pricedProduct.getPrice().getValue() * quantity;
+        log.debug("Updating order totals - adding itemTotal={} to current subtotal={}", itemTotal, order.getSubtotal());
         order.setSubtotal(order.getSubtotal() + itemTotal);
         order.setFinalPrice(order.getSubtotal()); // Will be updated when discounts are applied
 
-        // Save and return
         order = orderRepository.save(order);
         log.debug("Added item to order. New subtotal={}, finalPrice={}", order.getSubtotal(), order.getFinalPrice());
 
