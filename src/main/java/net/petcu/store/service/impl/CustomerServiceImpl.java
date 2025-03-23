@@ -9,6 +9,7 @@ import net.petcu.store.domain.Product;
 import net.petcu.store.domain.User;
 import net.petcu.store.domain.enumeration.OrderStatus;
 import net.petcu.store.exception.OrderNotFoundException;
+import net.petcu.store.exception.PaymentFailedException;
 import net.petcu.store.exception.ProductNotFoundException;
 import net.petcu.store.exception.UnauthorizedException;
 import net.petcu.store.exception.UserNotFoundException;
@@ -18,6 +19,7 @@ import net.petcu.store.repository.ProductRepository;
 import net.petcu.store.repository.UserRepository;
 import net.petcu.store.security.SecurityUtils;
 import net.petcu.store.service.CustomerService;
+import net.petcu.store.service.PaymentService;
 import net.petcu.store.service.dto.OrderDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final PricedProductRepository pricedProductRepository;
+    private final PaymentService paymentService;
 
     @Override
     public OrderDTO createOrder() {
@@ -96,6 +99,28 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public OrderDTO finalizeOrder(Long orderId) {
         log.debug("Request to finalize order {}", orderId);
-        throw new UnsupportedOperationException("Not ready yet");
+
+        Order order = orderRepository
+            .findOneWithEagerRelationships(orderId)
+            .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+        log.debug("Found order orderId={} with status={}", orderId, order.getStatus());
+
+        if (order.getStatus() != OrderStatus.NEW) {
+            throw new IllegalStateException("Order is not in NEW status");
+        }
+
+        log.debug("Processing payment for order orderId={} with amount={}", orderId, order.getFinalPrice());
+        boolean paymentSuccess = paymentService.processPayment(order);
+
+        if (!paymentSuccess) {
+            log.warn("Payment failed for order orderId={} due to insufficient funds", orderId);
+            throw new PaymentFailedException("Payment failed: insufficient funds");
+        }
+
+        order.setStatus(OrderStatus.PAID);
+        order = orderRepository.save(order);
+        log.debug("Order orderId={} finalized successfully", orderId);
+
+        return new OrderDTO(order);
     }
 }

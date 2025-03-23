@@ -33,7 +33,7 @@ public class CustomerController {
         @RequestParam Long productId,
         @RequestParam(defaultValue = "1") Long quantity
     ) {
-        log.debug("REST request to add item to order : {}", orderId);
+        log.debug("REST request to add item to orderId={}", orderId);
         OrderDTO result = customerService.addItemToOrder(orderId, productId, quantity);
         return ResponseEntity.ok(result);
     }
@@ -41,7 +41,7 @@ public class CustomerController {
     @PostMapping("/orders/{orderId}/discount")
     @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> applyDiscountCode(@PathVariable Long orderId, @RequestParam String discountCode) {
-        log.debug("REST request to apply discount code to order : {}", orderId);
+        log.debug("REST request to apply discount code to orderId={}", orderId);
         OrderDTO result = customerService.applyDiscountCode(orderId, discountCode);
         return ResponseEntity.ok(result);
     }
@@ -49,7 +49,7 @@ public class CustomerController {
     @PostMapping("/orders/{orderId}/finalize")
     @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<OrderDTO> finalizeOrder(@PathVariable Long orderId) {
-        log.debug("REST request to finalize order : {}", orderId);
+        log.debug("REST request to finalize orderId={}", orderId);
         OrderDTO result = customerService.finalizeOrder(orderId);
         return ResponseEntity.ok(result);
     }

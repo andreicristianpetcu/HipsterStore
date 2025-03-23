@@ -9,6 +9,7 @@ import java.util.Optional;
 import net.petcu.store.domain.*;
 import net.petcu.store.domain.enumeration.OrderStatus;
 import net.petcu.store.exception.OrderNotFoundException;
+import net.petcu.store.exception.PaymentFailedException;
 import net.petcu.store.exception.UnauthorizedException;
 import net.petcu.store.repository.OrderRepository;
 import net.petcu.store.repository.PricedProductRepository;
@@ -39,6 +40,9 @@ class CustomerServiceTest {
     @Mock
     private PricedProductRepository pricedProductRepository;
 
+    @Mock
+    private PaymentService paymentService;
+
     private CustomerService customerService;
 
     private static final String DEFAULT_LOGIN = "johndoe";
@@ -50,7 +54,13 @@ class CustomerServiceTest {
 
     @BeforeEach
     void setUp() {
-        customerService = new CustomerServiceImpl(orderRepository, userRepository, productRepository, pricedProductRepository);
+        customerService = new CustomerServiceImpl(
+            orderRepository,
+            userRepository,
+            productRepository,
+            pricedProductRepository,
+            paymentService
+        );
         this.user = createUser(DEFAULT_LOGIN, 1L);
     }
 
@@ -119,6 +129,79 @@ class CustomerServiceTest {
             .isInstanceOf(OrderNotFoundException.class)
             .hasMessage("Order not found: " + DEFAULT_ORDER_ID);
         verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+    }
+
+    @Test
+    void GivenValidOrder_WhenFinalizeOrder_ShouldProcessPaymentAndUpdateStatus() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(paymentService.processPayment(order)).thenReturn(true);
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            assertThat(savedOrder.getStatus()).isEqualTo(OrderStatus.PAID);
+            return savedOrder;
+        });
+
+        // Act
+        OrderDTO result = customerService.finalizeOrder(DEFAULT_ORDER_ID);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(DEFAULT_ORDER_ID);
+        assertThat(result.status()).isEqualTo(OrderStatus.PAID);
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(paymentService).processPayment(order);
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void GivenValidOrder_WhenFinalizeOrderWithInsufficientFunds_ShouldThrowPaymentFailedException() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+        when(paymentService.processPayment(order)).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> customerService.finalizeOrder(DEFAULT_ORDER_ID))
+            .isInstanceOf(PaymentFailedException.class)
+            .hasMessage("Payment failed: insufficient funds");
+
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(paymentService).processPayment(order);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void GivenNonExistentOrder_WhenFinalizeOrder_ShouldThrowOrderNotFoundException() {
+        // Arrange
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> customerService.finalizeOrder(DEFAULT_ORDER_ID))
+            .isInstanceOf(OrderNotFoundException.class)
+            .hasMessage("Order not found: " + DEFAULT_ORDER_ID);
+
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(paymentService, never()).processPayment(any());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void GivenPaidOrder_WhenFinalizeOrder_ShouldThrowIllegalStateException() {
+        // Arrange
+        Order order = createOrder(DEFAULT_ORDER_ID, user);
+        order.setStatus(OrderStatus.PAID);
+        when(orderRepository.findOneWithEagerRelationships(DEFAULT_ORDER_ID)).thenReturn(Optional.of(order));
+
+        // Act & Assert
+        assertThatThrownBy(() -> customerService.finalizeOrder(DEFAULT_ORDER_ID))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Order is not in NEW status");
+
+        verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);
+        verify(paymentService, never()).processPayment(any());
+        verify(orderRepository, never()).save(any());
     }
 
     private void setupSecurityContext(MockedStatic<SecurityUtils> securityUtils) {
