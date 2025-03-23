@@ -1,0 +1,58 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (order(); as orderRef) {
+      <div>
+        <h2 data-cy="orderDetailsHeading"><span>Order</span></h2>
+
+        <hr />
+
+        <jhi-alert-error></jhi-alert-error>
+
+        <jhi-alert></jhi-alert>
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ orderRef.id }}</span>
+          </dd>
+          <dt><span>Date</span></dt>
+          <dd>
+            <span>{{ orderRef.date | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Subtotal</span></dt>
+          <dd>
+            <span>{{ orderRef.subtotal }}</span>
+          </dd>
+          <dt><span>Final Price</span></dt>
+          <dd>
+            <span>{{ orderRef.finalPrice }}</span>
+          </dd>
+          <dt><span>Status</span></dt>
+          <dd>
+            <span>{{ { null: '', NEW: 'NEW', PAID: 'PAID', CANCELED: 'CANCELED' }[orderRef.status ?? 'null'] }}</span>
+          </dd>
+          <dt><span>User</span></dt>
+          <dd>
+            <span>{{ orderRef.user?.login }}</span>
+          </dd>
+          <dt><span>Discount</span></dt>
+          <dd>
+            @if (order()!.discount) {
+              <div>
+                <a [routerLink]="['/discount', order()!.discount?.id, 'view']">{{ orderRef.discount?.discountCode }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/order', orderRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

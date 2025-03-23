@@ -21,6 +21,7 @@ type OrderItemFormGroupContent = {
   quantity: FormControl<IOrderItem['quantity']>;
   product: FormControl<IOrderItem['product']>;
   price: FormControl<IOrderItem['price']>;
+  order: FormControl<IOrderItem['order']>;
 };
 
 export type OrderItemFormGroup = FormGroup<OrderItemFormGroupContent>;
@@ -43,6 +44,7 @@ export class OrderItemFormService {
       quantity: new FormControl(orderItemRawValue.quantity),
       product: new FormControl(orderItemRawValue.product),
       price: new FormControl(orderItemRawValue.price),
+      order: new FormControl(orderItemRawValue.order),
     });
   }
 

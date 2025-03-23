@@ -254,6 +254,8 @@ class PriceResourceIT {
         Price partialUpdatedPrice = new Price();
         partialUpdatedPrice.setId(price.getId());
 
+        partialUpdatedPrice.value(UPDATED_VALUE);
+
         restPriceMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedPrice.getId())

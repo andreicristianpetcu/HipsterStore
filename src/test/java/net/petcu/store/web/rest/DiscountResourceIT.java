@@ -268,7 +268,7 @@ class DiscountResourceIT {
         Discount partialUpdatedDiscount = new Discount();
         partialUpdatedDiscount.setId(discount.getId());
 
-        partialUpdatedDiscount.discountCode(UPDATED_DISCOUNT_CODE).used(UPDATED_USED);
+        partialUpdatedDiscount.discountType(UPDATED_DISCOUNT_TYPE).used(UPDATED_USED);
 
         restDiscountMockMvc
             .perform(

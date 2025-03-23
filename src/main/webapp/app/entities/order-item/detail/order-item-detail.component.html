@@ -35,6 +35,14 @@
               </div>
             }
           </dd>
+          <dt><span>Order</span></dt>
+          <dd>
+            @if (orderItem()!.order) {
+              <div>
+                <a [routerLink]="['/order', orderItem()!.order?.id, 'view']">{{ orderItemRef.order?.id }}</a>
+              </div>
+            }
+          </dd>
         </dl>
 
         <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">

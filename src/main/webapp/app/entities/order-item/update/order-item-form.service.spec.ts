@@ -23,6 +23,7 @@ describe('OrderItem Form Service', () => {
             quantity: expect.any(Object),
             product: expect.any(Object),
             price: expect.any(Object),
+            order: expect.any(Object),
           }),
         );
       });
@@ -36,6 +37,7 @@ describe('OrderItem Form Service', () => {
             quantity: expect.any(Object),
             product: expect.any(Object),
             price: expect.any(Object),
+            order: expect.any(Object),
           }),
         );
       });

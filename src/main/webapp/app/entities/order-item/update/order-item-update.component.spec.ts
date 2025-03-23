@@ -8,6 +8,8 @@ import { IProduct } from 'app/entities/product/product.model';
 import { ProductService } from 'app/entities/product/service/product.service';
 import { IPrice } from 'app/entities/price/price.model';
 import { PriceService } from 'app/entities/price/service/price.service';
+import { IOrder } from 'app/entities/order/order.model';
+import { OrderService } from 'app/entities/order/service/order.service';
 import { IOrderItem } from '../order-item.model';
 import { OrderItemService } from '../service/order-item.service';
 import { OrderItemFormService } from './order-item-form.service';
@@ -22,6 +24,7 @@ describe('OrderItem Management Update Component', () => {
   let orderItemService: OrderItemService;
   let productService: ProductService;
   let priceService: PriceService;
+  let orderService: OrderService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -46,6 +49,7 @@ describe('OrderItem Management Update Component', () => {
     orderItemService = TestBed.inject(OrderItemService);
     productService = TestBed.inject(ProductService);
     priceService = TestBed.inject(PriceService);
+    orderService = TestBed.inject(OrderService);
 
     comp = fixture.componentInstance;
   });
@@ -95,18 +99,43 @@ describe('OrderItem Management Update Component', () => {
       expect(comp.pricesSharedCollection).toEqual(expectedCollection);
     });
 
+    it('Should call Order query and add missing value', () => {
+      const orderItem: IOrderItem = { id: 123 };
+      const order: IOrder = { id: 14644 };
+      orderItem.order = order;
+
+      const orderCollection: IOrder[] = [{ id: 14644 }];
+      jest.spyOn(orderService, 'query').mockReturnValue(of(new HttpResponse({ body: orderCollection })));
+      const additionalOrders = [order];
+      const expectedCollection: IOrder[] = [...additionalOrders, ...orderCollection];
+      jest.spyOn(orderService, 'addOrderToCollectionIfMissing').mockReturnValue(expectedCollection);
+
+      activatedRoute.data = of({ orderItem });
+      comp.ngOnInit();
+
+      expect(orderService.query).toHaveBeenCalled();
+      expect(orderService.addOrderToCollectionIfMissing).toHaveBeenCalledWith(
+        orderCollection,
+        ...additionalOrders.map(expect.objectContaining),
+      );
+      expect(comp.ordersSharedCollection).toEqual(expectedCollection);
+    });
+
     it('Should update editForm', () => {
       const orderItem: IOrderItem = { id: 123 };
       const product: IProduct = { id: 21536 };
       orderItem.product = product;
       const price: IPrice = { id: 10065 };
       orderItem.price = price;
+      const order: IOrder = { id: 14644 };
+      orderItem.order = order;
 
       activatedRoute.data = of({ orderItem });
       comp.ngOnInit();
 
       expect(comp.productsSharedCollection).toContainEqual(product);
       expect(comp.pricesSharedCollection).toContainEqual(price);
+      expect(comp.ordersSharedCollection).toContainEqual(order);
       expect(comp.orderItem).toEqual(orderItem);
     });
   });
@@ -197,6 +226,16 @@ describe('OrderItem Management Update Component', () => {
         jest.spyOn(priceService, 'comparePrice');
         comp.comparePrice(entity, entity2);
         expect(priceService.comparePrice).toHaveBeenCalledWith(entity, entity2);
+      });
+    });
+
+    describe('compareOrder', () => {
+      it('Should forward to orderService', () => {
+        const entity = { id: 14644 };
+        const entity2 = { id: 4253 };
+        jest.spyOn(orderService, 'compareOrder');
+        comp.compareOrder(entity, entity2);
+        expect(orderService.compareOrder).toHaveBeenCalledWith(entity, entity2);
       });
     });
   });

@@ -1,6 +1,7 @@
 package net.petcu.store.domain;
 
 import static net.petcu.store.domain.OrderItemTestSamples.*;
+import static net.petcu.store.domain.OrderTestSamples.*;
 import static net.petcu.store.domain.PriceTestSamples.*;
 import static net.petcu.store.domain.ProductTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,5 +47,17 @@ class OrderItemTest {
 
         orderItem.price(null);
         assertThat(orderItem.getPrice()).isNull();
+    }
+
+    @Test
+    void orderTest() {
+        OrderItem orderItem = getOrderItemRandomSampleGenerator();
+        Order orderBack = getOrderRandomSampleGenerator();
+
+        orderItem.setOrder(orderBack);
+        assertThat(orderItem.getOrder()).isEqualTo(orderBack);
+
+        orderItem.order(null);
+        assertThat(orderItem.getOrder()).isNull();
     }
 }

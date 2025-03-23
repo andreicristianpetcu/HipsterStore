@@ -1,5 +1,6 @@
 package net.petcu.store.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import org.hibernate.annotations.Cache;
@@ -30,6 +31,10 @@ public class OrderItem implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Price price;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value = { "user", "orderItems", "discount" }, allowSetters = true)
+    private Order order;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -82,6 +87,19 @@ public class OrderItem implements Serializable {
 
     public OrderItem price(Price price) {
         this.setPrice(price);
+        return this;
+    }
+
+    public Order getOrder() {
+        return this.order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public OrderItem order(Order order) {
+        this.setOrder(order);
         return this;
     }
 

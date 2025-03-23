@@ -284,6 +284,8 @@ class OrderItemResourceIT {
         OrderItem partialUpdatedOrderItem = new OrderItem();
         partialUpdatedOrderItem.setId(orderItem.getId());
 
+        partialUpdatedOrderItem.quantity(UPDATED_QUANTITY);
+
         restOrderItemMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedOrderItem.getId())

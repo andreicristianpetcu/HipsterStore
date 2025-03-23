@@ -11,6 +11,8 @@ import { IProduct } from 'app/entities/product/product.model';
 import { ProductService } from 'app/entities/product/service/product.service';
 import { IPrice } from 'app/entities/price/price.model';
 import { PriceService } from 'app/entities/price/service/price.service';
+import { IOrder } from 'app/entities/order/order.model';
+import { OrderService } from 'app/entities/order/service/order.service';
 import { OrderItemService } from '../service/order-item.service';
 import { IOrderItem } from '../order-item.model';
 import { OrderItemFormGroup, OrderItemFormService } from './order-item-form.service';
@@ -26,11 +28,13 @@ export class OrderItemUpdateComponent implements OnInit {
 
   productsSharedCollection: IProduct[] = [];
   pricesSharedCollection: IPrice[] = [];
+  ordersSharedCollection: IOrder[] = [];
 
   protected orderItemService = inject(OrderItemService);
   protected orderItemFormService = inject(OrderItemFormService);
   protected productService = inject(ProductService);
   protected priceService = inject(PriceService);
+  protected orderService = inject(OrderService);
   protected activatedRoute = inject(ActivatedRoute);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -39,6 +43,8 @@ export class OrderItemUpdateComponent implements OnInit {
   compareProduct = (o1: IProduct | null, o2: IProduct | null): boolean => this.productService.compareProduct(o1, o2);
 
   comparePrice = (o1: IPrice | null, o2: IPrice | null): boolean => this.priceService.comparePrice(o1, o2);
+
+  compareOrder = (o1: IOrder | null, o2: IOrder | null): boolean => this.orderService.compareOrder(o1, o2);
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ orderItem }) => {
@@ -93,6 +99,7 @@ export class OrderItemUpdateComponent implements OnInit {
       orderItem.product,
     );
     this.pricesSharedCollection = this.priceService.addPriceToCollectionIfMissing<IPrice>(this.pricesSharedCollection, orderItem.price);
+    this.ordersSharedCollection = this.orderService.addOrderToCollectionIfMissing<IOrder>(this.ordersSharedCollection, orderItem.order);
   }
 
   protected loadRelationshipsOptions(): void {
@@ -107,5 +114,11 @@ export class OrderItemUpdateComponent implements OnInit {
       .pipe(map((res: HttpResponse<IPrice[]>) => res.body ?? []))
       .pipe(map((prices: IPrice[]) => this.priceService.addPriceToCollectionIfMissing<IPrice>(prices, this.orderItem?.price)))
       .subscribe((prices: IPrice[]) => (this.pricesSharedCollection = prices));
+
+    this.orderService
+      .query()
+      .pipe(map((res: HttpResponse<IOrder[]>) => res.body ?? []))
+      .pipe(map((orders: IOrder[]) => this.orderService.addOrderToCollectionIfMissing<IOrder>(orders, this.orderItem?.order)))
+      .subscribe((orders: IOrder[]) => (this.ordersSharedCollection = orders));
   }
 }

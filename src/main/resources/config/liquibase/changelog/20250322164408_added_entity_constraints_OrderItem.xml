@@ -23,5 +23,12 @@
                                  referencedColumnNames="id"
                                  referencedTableName="price"
                                  />
+
+        <addForeignKeyConstraint baseColumnNames="order_id"
+                                 baseTableName="order_item"
+                                 constraintName="fk_order_item__order_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="jhi_order"
+                                 />
     </changeSet>
 </databaseChangeLog>

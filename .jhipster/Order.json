@@ -1,0 +1,58 @@
+{
+  "annotations": {
+    "changelogDate": "20250323121233"
+  },
+  "dto": "no",
+  "entityTableName": "jhi_order",
+  "fields": [
+    {
+      "fieldName": "date",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "subtotal",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "finalPrice",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "OrderStatus",
+      "fieldValues": "NEW,PAID,CANCELED"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "Order",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityField": "id",
+      "otherEntityName": "orderItem",
+      "otherEntityRelationshipName": "order",
+      "relationshipName": "orderItems",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "id": false,
+      "otherEntityField": "discountCode",
+      "otherEntityName": "discount",
+      "otherEntityRelationshipName": "order",
+      "relationshipName": "discount",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

@@ -59,6 +59,12 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
+            <th scope="col" jhiSortBy="order.id">
+              <div class="d-flex">
+                <span>Order</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
             <th scope="col"></th>
           </tr>
         </thead>
@@ -80,6 +86,13 @@
                 @if (orderItem.price) {
                   <div>
                     <a [routerLink]="['/price', orderItem.price.id, 'view']">{{ orderItem.price.value }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                @if (orderItem.order) {
+                  <div>
+                    <a [routerLink]="['/order', orderItem.order.id, 'view']">{{ orderItem.order.id }}</a>
                   </div>
                 }
               </td>

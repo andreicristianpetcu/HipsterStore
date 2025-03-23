@@ -60,6 +60,7 @@ public class OrderItemAsserts {
         assertThat(actual)
             .as("Verify OrderItem relationships")
             .satisfies(a -> assertThat(a.getProduct()).as("check product").isEqualTo(expected.getProduct()))
-            .satisfies(a -> assertThat(a.getPrice()).as("check price").isEqualTo(expected.getPrice()));
+            .satisfies(a -> assertThat(a.getPrice()).as("check price").isEqualTo(expected.getPrice()))
+            .satisfies(a -> assertThat(a.getOrder()).as("check order").isEqualTo(expected.getOrder()));
     }
 }

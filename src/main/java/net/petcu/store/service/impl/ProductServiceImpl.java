@@ -53,7 +53,7 @@ public class ProductServiceImpl implements ProductService {
         LOG.debug("Request to partially update Product : {}", productDTO);
 
         return productRepository
-            .findById(productDTO.id())
+            .findById(productDTO.getId())
             .map(existingProduct -> {
                 productMapper.partialUpdate(existingProduct, productDTO);
 

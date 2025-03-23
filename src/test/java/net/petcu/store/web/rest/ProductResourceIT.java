@@ -196,7 +196,7 @@ class ProductResourceIT {
 
         restProductMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, productDTO.id()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(productDTO))
+                put(ENTITY_API_URL_ID, productDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(productDTO))
             )
             .andExpect(status().isOk());
 
@@ -217,7 +217,7 @@ class ProductResourceIT {
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restProductMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, productDTO.id()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(productDTO))
+                put(ENTITY_API_URL_ID, productDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(productDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -277,7 +277,7 @@ class ProductResourceIT {
         Product partialUpdatedProduct = new Product();
         partialUpdatedProduct.setId(product.getId());
 
-        partialUpdatedProduct.name(UPDATED_NAME).description(UPDATED_DESCRIPTION);
+        partialUpdatedProduct.description(UPDATED_DESCRIPTION);
 
         restProductMockMvc
             .perform(
@@ -333,7 +333,7 @@ class ProductResourceIT {
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restProductMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, productDTO.id())
+                patch(ENTITY_API_URL_ID, productDTO.getId())
                     .contentType("application/merge-patch+json")
                     .content(om.writeValueAsBytes(productDTO))
             )

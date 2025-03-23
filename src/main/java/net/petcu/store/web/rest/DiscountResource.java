@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 import net.petcu.store.domain.Discount;
 import net.petcu.store.repository.DiscountRepository;
 import net.petcu.store.web.rest.errors.BadRequestAlertException;
@@ -144,10 +145,17 @@ public class DiscountResource {
     /**
      * {@code GET  /discounts} : get all the discounts.
      *
+     * @param filter the filter of the request.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of discounts in body.
      */
     @GetMapping("")
-    public List<Discount> getAllDiscounts() {
+    public List<Discount> getAllDiscounts(@RequestParam(name = "filter", required = false) String filter) {
+        if ("order-is-null".equals(filter)) {
+            LOG.debug("REST request to get all Discounts where order is null");
+            return StreamSupport.stream(discountRepository.findAll().spliterator(), false)
+                .filter(discount -> discount.getOrder() == null)
+                .toList();
+        }
         LOG.debug("REST request to get all Discounts");
         return discountRepository.findAll();
     }

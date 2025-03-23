@@ -297,8 +297,6 @@ class PricedProductResourceIT {
         PricedProduct partialUpdatedPricedProduct = new PricedProduct();
         partialUpdatedPricedProduct.setId(pricedProduct.getId());
 
-        partialUpdatedPricedProduct.active(UPDATED_ACTIVE);
-
         restPricedProductMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedPricedProduct.getId())

@@ -1,5 +1,6 @@
 package net.petcu.store.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
@@ -33,6 +34,10 @@ public class Discount implements Serializable {
 
     @Column(name = "used")
     private Boolean used;
+
+    @JsonIgnoreProperties(value = { "user", "orderItems", "discount" }, allowSetters = true)
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "discount")
+    private Order order;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -86,6 +91,25 @@ public class Discount implements Serializable {
 
     public void setUsed(Boolean used) {
         this.used = used;
+    }
+
+    public Order getOrder() {
+        return this.order;
+    }
+
+    public void setOrder(Order order) {
+        if (this.order != null) {
+            this.order.setDiscount(null);
+        }
+        if (order != null) {
+            order.setDiscount(this);
+        }
+        this.order = order;
+    }
+
+    public Discount order(Order order) {
+        this.setOrder(order);
+        return this;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

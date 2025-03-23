@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -49,15 +48,14 @@ public class ProductResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) throws URISyntaxException {
         LOG.debug("REST request to save Product : {}", productDTO);
-        if (productDTO.id() != null) {
+        if (productDTO.getId() != null) {
             throw new BadRequestAlertException("A new product cannot already have an ID", ENTITY_NAME, "idexists");
         }
         productDTO = productService.save(productDTO);
-        return ResponseEntity.created(new URI("/api/products/" + productDTO.id()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, ((Object) productDTO.id()).toString()))
+        return ResponseEntity.created(new URI("/api/products/" + productDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, productDTO.getId().toString()))
             .body(productDTO);
     }
 
@@ -72,16 +70,15 @@ public class ProductResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ProductDTO> updateProduct(
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody ProductDTO productDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to update Product : {}, {}", id, productDTO);
-        if (productDTO.id() == null) {
+        if (productDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, productDTO.id())) {
+        if (!Objects.equals(id, productDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -91,7 +88,7 @@ public class ProductResource {
 
         productDTO = productService.update(productDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, ((Object) productDTO.id()).toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, productDTO.getId().toString()))
             .body(productDTO);
     }
 
@@ -107,16 +104,15 @@ public class ProductResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ProductDTO> partialUpdateProduct(
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody ProductDTO productDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Product partially : {}, {}", id, productDTO);
-        if (productDTO.id() == null) {
+        if (productDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, productDTO.id())) {
+        if (!Objects.equals(id, productDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -128,7 +124,7 @@ public class ProductResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, ((Object) productDTO.id()).toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, productDTO.getId().toString())
         );
     }
 
@@ -163,7 +159,6 @@ public class ProductResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Product : {}", id);
         productService.delete(id);
