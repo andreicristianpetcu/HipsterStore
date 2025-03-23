@@ -29,6 +29,7 @@ TODO:
 - Design error mechanism and handling plus logging
 - Write unit tests, at least for one class
 - Use Java 17+ features
+  - RandomGenerator in DummyPaymentService
 - Add a small Readme to document the project ✔️
 
 ## Project Structure
