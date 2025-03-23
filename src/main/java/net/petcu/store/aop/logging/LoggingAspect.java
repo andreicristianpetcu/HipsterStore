@@ -1,6 +1,7 @@
 package net.petcu.store.aop.logging;
 
 import java.util.Arrays;
+import net.petcu.store.exception.*;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -67,6 +68,9 @@ public class LoggingAspect {
      */
     @AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
+        if (e instanceof StoreException) {
+            logExtraInfoThenThrow((StoreException) e, joinPoint);
+        }
         if (env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
             logger(joinPoint).error(
                 "Exception in {}() with cause = '{}' and exception = '{}'",
@@ -81,6 +85,31 @@ public class LoggingAspect {
                 joinPoint.getSignature().getName(),
                 e.getCause() != null ? String.valueOf(e.getCause()) : "NULL"
             );
+        }
+    }
+
+    private void logExtraInfoThenThrow(StoreException e, JoinPoint joinPoint) {
+        switch (e) {
+            case OrderNotFoundException ex -> logger(joinPoint).error("Failed to add item to order: orderId={} not found", ex.getOrderId());
+            case ProductNotFoundException ex -> logger(joinPoint).error(
+                "Failed to add item to order: productId={} not found or has no active price",
+                ex.getProductId()
+            );
+            case UnauthorizedException ignored -> logger(joinPoint).error("Failed to add item to order: user is not authenticated");
+            case UserNotFoundException ex -> logger(joinPoint).error(
+                "Failed to add item to order: user not found userName={}",
+                ex.getUserName()
+            );
+            case PaymentFailedException ex -> logger(joinPoint).error(
+                "Failed to add item to order: payment failed finalPrice={}",
+                ex.getFinalPrice()
+            );
+            case InvalidOrderStatusException ex -> logger(joinPoint).error(
+                "Failed to add item to order: invalid order status for orderId={} orderStatus={}",
+                ex.getOrderId(),
+                ex.getOrderStatus()
+            );
+            case DiscountCodeNotFoundException ignored -> logger(joinPoint).error("Failed to add item to order: discount code not found");
         }
     }
 

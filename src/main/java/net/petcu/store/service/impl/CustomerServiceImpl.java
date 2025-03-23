@@ -38,7 +38,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         User user = userRepository
             .findOneByLogin(currentUser)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + currentUser));
+            .orElseThrow(() -> new UserNotFoundException("User not found: ", currentUser));
         log.debug("User found in the UserId={}", user.getId());
 
         Order order = new Order().date(Instant.now()).status(OrderStatus.NEW).user(user);
@@ -90,7 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         if (order.getStatus() != OrderStatus.NEW) {
             log.warn("Cannot apply discount to order orderId={} with status={}", orderId, order.getStatus());
-            throw new InvalidOrderStatusException("Order is not in NEW status");
+            throw new InvalidOrderStatusException("Order is not in NEW status", order.getStatus(), order.getId());
         }
 
         List<Discount> foundDiscounts = discountRepository.findByDiscountCode(discountCode);
@@ -136,7 +136,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         if (order.getStatus() != OrderStatus.NEW) {
             log.warn("Cannot finalize order orderId={} with status={}", orderId, order.getStatus());
-            throw new InvalidOrderStatusException("Order is not in NEW status");
+            throw new InvalidOrderStatusException("Order is not in NEW status", order.getStatus(), order.getId());
         }
 
         log.debug("Processing payment for order orderId={} with amount={}", orderId, order.getFinalPrice());
@@ -144,7 +144,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         if (!paymentSuccess) {
             log.warn("Payment failed for order orderId={} due to insufficient funds", orderId);
-            throw new PaymentFailedException("Payment failed: insufficient funds");
+            throw new PaymentFailedException("Payment failed: insufficient funds", order.getFinalPrice());
         }
 
         order.setStatus(OrderStatus.PAID);

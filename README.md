@@ -42,6 +42,7 @@ TODO:
 - Use Java 17+ features
   - RandomGenerator in DummyPaymentService
   - Abstract sealed classes in StoreException
+  - LoggingAspect.logExtraInfoThenThrow uses pattern matching with a switch expression.
 
 ## Project Structure
 
