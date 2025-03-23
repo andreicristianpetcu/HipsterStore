@@ -8,6 +8,7 @@ import net.petcu.store.domain.PricedProduct;
 import net.petcu.store.domain.Product;
 import net.petcu.store.domain.User;
 import net.petcu.store.domain.enumeration.OrderStatus;
+import net.petcu.store.exception.InvalidOrderStatusException;
 import net.petcu.store.exception.OrderNotFoundException;
 import net.petcu.store.exception.PaymentFailedException;
 import net.petcu.store.exception.ProductNotFoundException;
@@ -106,7 +107,8 @@ public class CustomerServiceImpl implements CustomerService {
         log.debug("Found order orderId={} with status={}", orderId, order.getStatus());
 
         if (order.getStatus() != OrderStatus.NEW) {
-            throw new IllegalStateException("Order is not in NEW status");
+            log.warn("Cannot finalize order orderId={} with status={}", orderId, order.getStatus());
+            throw new InvalidOrderStatusException("Order is not in NEW status");
         }
 
         log.debug("Processing payment for order orderId={} with amount={}", orderId, order.getFinalPrice());

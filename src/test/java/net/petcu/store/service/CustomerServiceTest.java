@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import net.petcu.store.domain.*;
 import net.petcu.store.domain.enumeration.OrderStatus;
+import net.petcu.store.exception.InvalidOrderStatusException;
 import net.petcu.store.exception.OrderNotFoundException;
 import net.petcu.store.exception.PaymentFailedException;
 import net.petcu.store.exception.UnauthorizedException;
@@ -188,7 +189,7 @@ class CustomerServiceTest {
     }
 
     @Test
-    void GivenPaidOrder_WhenFinalizeOrder_ShouldThrowIllegalStateException() {
+    void GivenPaidOrder_WhenFinalizeOrder_ShouldThrowInvalidOrderStatusException() {
         // Arrange
         Order order = createOrder(DEFAULT_ORDER_ID, user);
         order.setStatus(OrderStatus.PAID);
@@ -196,7 +197,7 @@ class CustomerServiceTest {
 
         // Act & Assert
         assertThatThrownBy(() -> customerService.finalizeOrder(DEFAULT_ORDER_ID))
-            .isInstanceOf(IllegalStateException.class)
+            .isInstanceOf(InvalidOrderStatusException.class)
             .hasMessage("Order is not in NEW status");
 
         verify(orderRepository).findOneWithEagerRelationships(DEFAULT_ORDER_ID);

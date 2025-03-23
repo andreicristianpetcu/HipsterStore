@@ -2,7 +2,13 @@ package net.petcu.store.exception;
 
 public abstract sealed class StoreException
     extends RuntimeException
-    permits OrderNotFoundException, UnauthorizedException, UserNotFoundException, ProductNotFoundException, PaymentFailedException {
+    permits
+        OrderNotFoundException,
+        UnauthorizedException,
+        UserNotFoundException,
+        ProductNotFoundException,
+        PaymentFailedException,
+        InvalidOrderStatusException {
 
     protected StoreException(String message) {
         super(message);
