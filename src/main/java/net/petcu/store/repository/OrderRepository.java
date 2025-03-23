@@ -14,15 +14,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    @Query("select jhiOrder from Order jhiOrder where jhiOrder.user.login = ?#{authentication.name}")
-    List<Order> findByUserIsCurrentUser();
-
     default Optional<Order> findOneWithEagerRelationships(Long id) {
         return this.findOneWithToOneRelationships(id);
-    }
-
-    default List<Order> findAllWithEagerRelationships() {
-        return this.findAllWithToOneRelationships();
     }
 
     default Page<Order> findAllWithEagerRelationships(Pageable pageable) {

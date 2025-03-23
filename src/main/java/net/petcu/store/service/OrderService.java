@@ -21,7 +21,8 @@ public interface OrderService {
     /**
      * Updates a order.
      *
-     * @param order the entity to update.
+     * @param order the ent
+ity to update.
      * @return the persisted entity.
      */
     Order update(Order order);

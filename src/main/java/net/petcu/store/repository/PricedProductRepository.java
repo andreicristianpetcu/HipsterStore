@@ -18,10 +18,6 @@ public interface PricedProductRepository extends JpaRepository<PricedProduct, Lo
         return this.findOneWithToOneRelationships(id);
     }
 
-    default List<PricedProduct> findAllWithEagerRelationships() {
-        return this.findAllWithToOneRelationships();
-    }
-
     default Page<PricedProduct> findAllWithEagerRelationships(Pageable pageable) {
         return this.findAllWithToOneRelationships(pageable);
     }
@@ -31,11 +27,6 @@ public interface PricedProductRepository extends JpaRepository<PricedProduct, Lo
         countQuery = "select count(pricedProduct) from PricedProduct pricedProduct"
     )
     Page<PricedProduct> findAllWithToOneRelationships(Pageable pageable);
-
-    @Query(
-        "select pricedProduct from PricedProduct pricedProduct left join fetch pricedProduct.product left join fetch pricedProduct.price"
-    )
-    List<PricedProduct> findAllWithToOneRelationships();
 
     @Query(
         "select pricedProduct from PricedProduct pricedProduct left join fetch pricedProduct.product left join fetch pricedProduct.price where pricedProduct.id =:id"

@@ -3,6 +3,8 @@
 This application was generated using JHipster 8.9.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.9.0](https://www.jhipster.tech/documentation-archive/v8.9.0).
 
 Its goal is to help me understand what is new in Java/Spring/Hibernate and maybe sell some products.
+I used JHipster to generate front end also since it helps me iterate on the API faster, rather than using Postman.
+It also has builtin JWT authentication.
 
 Entities and their role:
 
@@ -40,7 +42,6 @@ TODO:
 - Use Java 17+ features
   - RandomGenerator in DummyPaymentService
   - Abstract sealed classes in StoreException
-- Add a small Readme to document the project ✔️
 
 ## Project Structure
 
